@@ -1,43 +1,49 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)](https://www.linkedin.com/in/hassenamri005/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-# Backend — NestJS API
+# NestJS Boilerplate
 
-NestJS 10 REST API with Supabase Auth, Prisma (empty schema ready for custom tables), and Docker.
+A NestJS 10 boilerplate with Supabase Auth, Prisma (empty schema ready for your models), Swagger, and Docker.
+
+Clone it, add your models and business logic — everything else is already wired up.
 
 ## Stack
 
-- **NestJS 10** — Node.js framework
-- **Prisma 5** — ORM (schema is empty, ready for your models)
-- **Supabase Auth** — authentication proxied through the API
+- **NestJS 10** — modular Node.js framework
 - **Node 20**, TypeScript, ESLint v9
+- **Prisma 5** — empty schema, ready to add your tables
+- **Supabase Auth** — proxied through the API (no custom JWT implementation)
+- **Swagger** — auto-generated API docs at `/api`
+- **Docker** — dev and prod configurations
 
 ## Auth Flow
 
 ```
-POST /auth/login    → supabase.auth.signInWithPassword()
-POST /auth/register → supabase.auth.admin.createUser()
+POST /auth/login                     → supabase.auth.signInWithPassword()
+POST /auth/register                  → supabase.auth.admin.createUser()
 POST /auth/refresh-token
 POST /auth/request-reset-password-email
 POST /auth/reset-password
-GET  /auth/me       → requires Bearer token
+GET  /auth/me                        → requires Bearer token
 ```
 
-Protected routes use `SupabaseAuthGuard` — validates the JWT via `supabase.auth.getUser(token)`.
+Protected routes use `@UseGuards(SupabaseAuthGuard)` — validates JWT via `supabase.auth.getUser(token)`.
 
 Response shape: `{ accessToken, refreshToken, user: { id, email, roleId } }`
-`roleId` comes from `user.app_metadata.roleId` (default: 3).
+`roleId` is stored in Supabase `user.app_metadata.roleId` (default: 3).
 
 ## Environment
 
-Copy `.env.example` to `.env` and fill in the values:
+Copy `.env.example` to `.env`:
 
-```
-SUPABASE_URL=http://localhost:8000
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-DATABASE_URL=postgresql://...
+```env
 APP_PORT=6001
 FRONTEND_URL=http://localhost:3000
+
+SUPABASE_URL=http://localhost:8000
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/mydb?schema=public
 ```
 
 ## Run with Docker
@@ -68,21 +74,28 @@ npm run start:dev
 ## Useful Commands
 
 ```sh
-npm run db:migrate          # create a new migration
+npm run db:migrate          # create a new Prisma migration
 npm run db:migrate:deploy   # deploy migrations
 npm run db:seed             # seed Supabase users
 npm run db:studio           # open Prisma Studio
-npm run swagger:ts          # generate API client from swagger.json
+npm run swagger:ts          # generate TS API client from swagger.json
 ```
 
 ## Seeded Users
 
 | Email | Password | Role |
 |---|---|---|
-| superadmin@mail.com | password123 | SUPERADMIN (roleId 1) |
-| admin@mail.com | password123 | ADMIN (roleId 2) |
-| user@mail.com | password123 | USER (roleId 3) |
+| superadmin@example.com | password123 | SUPERADMIN (roleId 1) |
+| admin@example.com | password123 | ADMIN (roleId 2) |
+| user@example.com | password123 | USER (roleId 3) |
+
+## Adding Your Own Tables
+
+1. Add models to `prisma/schema.prisma`
+2. Run `npm run db:migrate`
+3. Inject `PrismaService` in your NestJS service
 
 ## Swagger
 
 Available at `http://localhost:6001/api` when the server is running.
+After adding endpoints, run `npm run swagger:ts` and copy `src/api/myApi.ts` to your frontend.

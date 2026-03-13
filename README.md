@@ -117,7 +117,7 @@ Protected routes use `@UseGuards(SupabaseAuthGuard)` which validates the token v
 ### Prerequisites
 
 - [Docker](https://www.docker.com/) and Docker Compose
-- [Node.js](https://nodejs.org/) 18+ and npm
+- [Node.js](https://nodejs.org/) 20+ and npm
 - A running Supabase instance (self-hosted via `supabase/` folder, or [Supabase Cloud](https://supabase.com))
 
 ---
