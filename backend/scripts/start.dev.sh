@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Generate Prisma client
+echo "Generating Prisma client........................................................."
+npm run prisma:generate
+
 # Run migration
 echo "Starting DB migration deployment........................................................."
 npm run db:migrate:deploy

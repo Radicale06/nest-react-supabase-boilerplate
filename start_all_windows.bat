@@ -4,11 +4,24 @@ echo   NestJS + React + Supabase Boilerplate
 echo   Local Dev Setup (Windows)
 echo ========================================
 
+:: ── SUPABASE ─────────────────────────────────
+echo.
+echo [SUPABASE] Creating Docker network...
+docker network create network 2>/dev/null || echo [SUPABASE] Network already exists, skipping.
+
+echo [SUPABASE] Starting self-hosted Supabase...
+cd supabase
+call docker compose up -d
+echo [SUPABASE] Waiting for Supabase to be ready...
+timeout /t 15 /nobreak >/dev/null
+echo [SUPABASE] Ready at http://localhost:8000
+echo [SUPABASE] Studio at http://localhost:54323
+
 :: ── BACKEND ──────────────────────────────────
 echo.
 echo [BACKEND] Setting up...
 
-cd backend
+cd ..\backend
 
 if not exist .env (
     copy .env.example .env
@@ -21,7 +34,6 @@ if not exist .env (
 call npm install
 call docker-compose up --build -d
 call npm run db:seed
-call npm run swagger:ts
 
 echo [BACKEND] Ready at http://localhost:6001
 echo [BACKEND] Swagger at http://localhost:6001/api

@@ -1,6 +1,5 @@
 # Use the official Node.js image as the base image
-FROM node:18
-
+FROM node:20
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -9,7 +8,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --fetch-retry-mintimeout 20000 --fetch-retry-maxtimeout 120000 --fetch-retries 5
 
 # Copy the rest of the application code
 COPY . .
@@ -18,7 +17,4 @@ COPY . .
 EXPOSE 6001
 
 # Copy and run the script
-COPY ./scripts/run_app_dev.sh /app/scripts/run_app_dev.sh
-RUN chmod +x /app/scripts/run_app_dev.sh
-
-CMD ["/bin/sh", "-c", "/app/scripts/run_app_dev.sh"]
+CMD ["/bin/sh", "-c", "sed -i 's/\\r$//' /app/scripts/start.dev.sh && chmod +x /app/scripts/start.dev.sh && /app/scripts/start.dev.sh"]

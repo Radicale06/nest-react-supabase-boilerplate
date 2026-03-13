@@ -6,22 +6,34 @@ echo "  NestJS + React + Supabase Boilerplate"
 echo "  Local Dev Setup"
 echo "========================================"
 
+# ── SUPABASE ─────────────────────────────────
+echo ""
+echo "[SUPABASE] Creating Docker network..."
+docker network create network 2>/dev/null || echo "[SUPABASE] Network already exists, skipping."
+
+echo "[SUPABASE] Starting self-hosted Supabase..."
+cd supabase/
+docker compose up -d
+echo "[SUPABASE] Waiting for Supabase to be ready..."
+sleep 15
+echo "[SUPABASE] Ready at http://localhost:8000"
+echo "[SUPABASE] Studio at http://localhost:54323"
+
 # ── BACKEND ──────────────────────────────────
 echo ""
 echo "[BACKEND] Setting up..."
 
-cd backend/
+cd ../backend/
 
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "[BACKEND] .env created from .env.example — fill in your SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before continuing."
+  echo "[BACKEND] .env created from .env.example — fill in SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY before continuing."
   exit 1
 fi
 
 npm install
 docker-compose up --build -d
 npm run db:seed
-npm run swagger:ts
 
 echo "[BACKEND] Ready at http://localhost:6001"
 echo "[BACKEND] Swagger at http://localhost:6001/api"
@@ -34,7 +46,7 @@ cd ../frontend/
 
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "[FRONTEND] .env created from .env.example — fill in your VITE_SUPABASE_ANON_KEY before continuing."
+  echo "[FRONTEND] .env created from .env.example — fill in VITE_SUPABASE_ANON_KEY before continuing."
   exit 1
 fi
 
