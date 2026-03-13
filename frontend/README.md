@@ -1,93 +1,69 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)](https://www.linkedin.com/in/hassenamri005/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-yellow)](https://github.com/your-profile/your-repo/releases)
 
-# React TS Boilerplate 🚀
+# Frontend — React App
 
-A React TypeScript boilerplate integrating **Authentication**, **Docker**, and **Docker Compose** for seamless development and production environments.
+React 18 + TypeScript + Vite frontend with role-based routing, Redux auth state, and Ant Design UI.
 
----
+## Stack
 
-## Features
+- **React 18**, TypeScript, Vite
+- **Ant Design 5** — UI components with custom theme
+- **Redux Toolkit + redux-persist** — auth state
+- **React Router 7** — routing with role guards
+- **@supabase/supabase-js** — Supabase client (storage, realtime, etc.)
 
-This project combines the following technologies:
+## Auth Flow
 
-- **React TS v18**: Modern React with TypeScript for type-safe development.
-- **Routing Handling**: Efficient routing with role-based authentication.
-  - **Role-Based Auth Routing**: Separate routes for **User** and **Admin** roles.
-- **Persistent Redux Store**: State management with Redux for a consistent user experience.
-- **Ant Design (Antd)**: UI library with a custom theme for a polished look.
-- **Prebuilt Pages**:
-  - Landing Page
-  - Login Page
-  - Admin Dashboard
-  - User Dashboard
-- **Docker Integration**:
-  - `Dockerfile.dev`: For a fast and easy development environment.
-  - `Dockerfile.prod`: For an optimized production environment.
-- **Docker Compose**:
-  - `docker-compose.yaml`: Simplifies setup for both development and production environments. Choose between `dev` or `prod` profiles.
+Auth is handled by the backend (`/auth/*` endpoints). The frontend:
+1. Calls `POST /auth/login` → receives `{ accessToken, refreshToken, user: { id, email, roleId } }`
+2. Stores tokens in Redux (persisted)
+3. Routes to the correct dashboard based on `roleId` (2 = Admin, 3 = User)
 
----
+## Routes
 
-## Existing Routes
+| Path | Access |
+|---|---|
+| `/` | Public — Landing page |
+| `/login` | Public — Login |
+| `/user/dashboard` | Private — roleId 3 (User) |
+| `/admin/dashboard` | Private — roleId 2 (Admin) |
+| `*` | Fallback |
 
-- `/`: Landing page.
-- `/login`: Login page for authentication.
-- `/user/dashboard`: Dashboard for authenticated users with the `user` role.
-- `/admin/dashboard`: Dashboard for authenticated admins with the `admin` role.
-- `*`: Fallback route for unhandled or incorrect paths.
+## Add a New Route
 
----
+1. Create your page in `src/pages/`
+2. Open `App.tsx` and add the route inside the appropriate section:
+   - Public routes: accessible to all
+   - Private routes: wrapped in role guard (user or admin)
 
-## How to Create a New Route
+## Environment
 
-1. **Create Your Page**:
+Copy `.env.example` to `.env`:
 
-   - Add your new page component in the `src/pages` directory.
+```
+VITE_BACKEND_API_URL=http://localhost:6001
+VITE_SUPABASE_URL=http://localhost:8000
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
 
-2. **Update Routing**:
+## Run with Docker
 
-   - Open `App.tsx`.
-   - Add your new route to either:
-     - **Public Routes**: Accessible to all users.
-     - **Private Routes**: Protected by role-based authentication.
+**Development:**
+```sh
+docker compose --profile dev up --build
+```
 
-3. **Role Guard**:
-   - Ensure the route is protected by the appropriate role guard logic ( _inside admin or user routes_ ).
+**Production:**
+```sh
+docker compose --profile prod up --build
+```
 
----
+## Run Locally (no Docker)
 
-## Getting Started
+```sh
+npm install
+npm run dev
+```
 
-### Prerequisites
-
-- Docker and Docker Compose installed.
-- Node.js and npm/yarn installed (for local development).
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   https://github.com/Hassenamri005/nest-react-boilerplate.git
-
-   cd your-repo
-   ```
-
-2. Start the development environment:
-
-   ```bash
-   docker-compose --profile dev up --build
-   ```
-
-3. For production:
-   ```bash
-   docker-compose --profile prod up --build
-   ```
-
----
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+App runs at `http://localhost:3000`.

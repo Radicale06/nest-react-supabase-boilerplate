@@ -1,86 +1,88 @@
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue)](https://www.linkedin.com/in/hassenamri005/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-yellow)](https://github.com/your-profile/your-repo/releases)
 
-# Nest JS Boilerplate
+# Backend — NestJS API
 
-![nestjs](https://github.com/user-attachments/assets/901842e8-5adb-4adb-8d22-fffb40a5347b)
+NestJS 10 REST API with Supabase Auth, Prisma (empty schema ready for custom tables), and Docker.
 
-NestJS boilerplate integrating Auth, Prisma, Postgres, Mailing, Docker, and Docker Compose.
+## Stack
 
-## About
+- **NestJS 10** — Node.js framework
+- **Prisma 5** — ORM (schema is empty, ready for your models)
+- **Supabase Auth** — authentication proxied through the API
+- **Node 20**, TypeScript, ESLint v9
 
-This project combines the following technologies:
+## Auth Flow
 
-- **Nest.js v10**
-- **PostgreSQL**
-- **Prisma** as an ORM
-- **JWT Auth** (accessToken & refreshToken)
-- **Roles Guard** (SUPERADMIN, ADMIN, USER, OTHER)
-- **Docker**:
-  - `Dockerfile.dev` for an easy and fast development environment
-  - `Dockerfile.prod` for a production environment
-- **Docker Compose**:
-  - `docker-compose.dev.yaml` for an easy and fast development environment
-  - `docker-compose.prod.yaml` for a production environment
-
-# Features
-
-## 1. Swagger-ts
-
-Used Library: [swagger-typescript-api](https://www.npmjs.com/package/swagger-typescript-api)
-
-- Supports OpenAPI 3.0, 2.0, JSON, and YAML
-- Generates the API Client for Fetch or Axios from an OpenAPI Specification
-
-We use this library to generate an **API TS** file (`src/api/myApi.ts`) from **swagger.json**, which contains a brief description of all our APIs.
-
-Generate `myApi.ts` file:
-
-```sh
-npm run swagger:ts
+```
+POST /auth/login    → supabase.auth.signInWithPassword()
+POST /auth/register → supabase.auth.admin.createUser()
+POST /auth/refresh-token
+POST /auth/request-reset-password-email
+POST /auth/reset-password
+GET  /auth/me       → requires Bearer token
 ```
 
-Then copy the generated file `src/api/myApi.ts` to your frontend folder.
+Protected routes use `SupabaseAuthGuard` — validates the JWT via `supabase.auth.getUser(token)`.
 
-## 2. Migrations
+Response shape: `{ accessToken, refreshToken, user: { id, email, roleId } }`
+`roleId` comes from `user.app_metadata.roleId` (default: 3).
 
-Create a new migration:
+## Environment
 
-```sh
-npx prisma migrate dev --name "init"
+Copy `.env.example` to `.env` and fill in the values:
+
+```
+SUPABASE_URL=http://localhost:8000
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DATABASE_URL=postgresql://...
+APP_PORT=6001
+FRONTEND_URL=http://localhost:3000
 ```
 
-- `--name`: is the name of generated migration
+## Run with Docker
 
-Deploy migrations to the database:
-
+**Development:**
 ```sh
-npx prisma migrate deploy
+docker compose -f docker-compose.yaml up --build
 ```
 
-Upload seed dummy data to the database:
-
+**Production:**
 ```sh
-npx prisma db seed
+docker compose -f docker-compose.prod.yaml up --build
 ```
 
-# Run the project
+The dev container runs `scripts/start.dev.sh` which:
+1. Generates Prisma client
+2. Deploys migrations
+3. Seeds Supabase users
+4. Starts the app in watch mode
 
-Create `.env` file from `.env.example`:
-
-```sh
-cat .env.example >> .env
-```
-
-## In Development Environment
+## Run Locally (no Docker)
 
 ```sh
-docker-compose -f docker-compose.dev.yaml up --build
+npm install
+npm run start:dev
 ```
 
-## In Production Environment
+## Useful Commands
 
 ```sh
-docker-compose -f docker-compose.prod.yaml up --build
+npm run db:migrate          # create a new migration
+npm run db:migrate:deploy   # deploy migrations
+npm run db:seed             # seed Supabase users
+npm run db:studio           # open Prisma Studio
+npm run swagger:ts          # generate API client from swagger.json
 ```
+
+## Seeded Users
+
+| Email | Password | Role |
+|---|---|---|
+| superadmin@mail.com | password123 | SUPERADMIN (roleId 1) |
+| admin@mail.com | password123 | ADMIN (roleId 2) |
+| user@mail.com | password123 | USER (roleId 3) |
+
+## Swagger
+
+Available at `http://localhost:6001/api` when the server is running.
